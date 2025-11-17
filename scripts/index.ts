@@ -1,4 +1,5 @@
 import { Kairo } from "./Kairo/index";
+import type { KairoCommand } from "./Kairo/utils/KairoUtils";
 
 async function main(): Promise<void> {
     Kairo.init(); // client
@@ -20,7 +21,7 @@ Kairo.onDeactivate = () => {
      */
 };
 
-Kairo.onScriptEvent = (message: string) => {
+Kairo.onScriptEvent = (data: KairoCommand) => {
     /**
      * ここにはアドオンが scriptEvent を受け取った際の処理を書く
      * 利用できるプロパティは { message } のみ

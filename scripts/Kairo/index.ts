@@ -3,17 +3,18 @@ import { AddonPropertyManager, type AddonProperty } from "./addons/AddonProperty
 import { AddonInitializer } from "./addons/router/init/AddonInitializer";
 import { AddonManager } from "./addons/AddonManager";
 import { SCRIPT_EVENT_IDS } from "./constants/scriptevent";
+import type { KairoCommand } from "./utils/KairoUtils";
 
 type ActivateHandler = () => void | Promise<void>;
 type DeactivateHandler = () => void | Promise<void>;
-type ScriptEventHandler = (message: string) => void | Promise<void>;
+type ScriptEventHandler = (data: KairoCommand) => void | Promise<void>;
 
 type HandlerOptions = {
     priority?: number;
 };
 
 type Assignable<T> = T | { run: T; options?: HandlerOptions };
-type Stored<T> = { fn: T; priority: number; };
+type Stored<T> = { fn: T; priority: number };
 
 export class Kairo {
     private static instance: Kairo;
@@ -65,8 +66,8 @@ export class Kairo {
         system.sendScriptEvent(SCRIPT_EVENT_IDS.UNSUBSCRIBE_INITIALIZE, "");
     }
 
-    public static dataVaultHandleOnScriptEvent(message: string): void {
-        this.getInstance().addonManager.dataVaultHandleOnScriptEvent(message);
+    public static dataVaultHandleOnScriptEvent(data: KairoCommand): void {
+        this.getInstance().addonManager.dataVaultHandleOnScriptEvent(data);
     }
 
     public getDataVaultLastDataLoaded(): { data: string; count: number } {
@@ -86,12 +87,18 @@ export class Kairo {
         else this._pushSorted(this._seHooks, val.run, val.options);
     }
 
-    public static addActivate(fn: ActivateHandler, opt?: HandlerOptions) { this._pushSorted(this._initHooks, fn, opt); }
-    public static addDeactivate(fn: DeactivateHandler, opt?: HandlerOptions) { this._pushSorted(this._deinitHooks, fn, opt); }
-    public static addScriptEvent(fn: ScriptEventHandler, opt?: HandlerOptions) { this._pushSorted(this._seHooks, fn, opt); }
+    public static addActivate(fn: ActivateHandler, opt?: HandlerOptions) {
+        this._pushSorted(this._initHooks, fn, opt);
+    }
+    public static addDeactivate(fn: DeactivateHandler, opt?: HandlerOptions) {
+        this._pushSorted(this._deinitHooks, fn, opt);
+    }
+    public static addScriptEvent(fn: ScriptEventHandler, opt?: HandlerOptions) {
+        this._pushSorted(this._seHooks, fn, opt);
+    }
 
-    public _scriptEvent(message: string): void {
-        void Kairo._runScriptEvent(message);
+    public _scriptEvent(data: KairoCommand): void {
+        void Kairo._runScriptEvent(data);
     }
 
     public _activateAddon(): void {
@@ -109,22 +116,49 @@ export class Kairo {
 
     private static async _runActivateHooks() {
         for (const { fn } of this._initHooks) {
-            try { await fn(); }
-            catch (e) { system.run(() => console.warn(`[Kairo.onActivate] ${e instanceof Error ? e.stack ?? e.message : String(e)}`)); }
+            try {
+                await fn();
+            } catch (e) {
+                system.run(() =>
+                    console.warn(
+                        `[Kairo.onActivate] ${
+                            e instanceof Error ? e.stack ?? e.message : String(e)
+                        }`,
+                    ),
+                );
+            }
         }
     }
 
     private static async _runDeactivateHooks() {
         for (const { fn } of [...this._deinitHooks].reverse()) {
-            try { await fn(); }
-            catch (e) { system.run(() => console.warn(`[Kairo.onDeactivate] ${e instanceof Error ? e.stack ?? e.message : String(e)}`)); }
+            try {
+                await fn();
+            } catch (e) {
+                system.run(() =>
+                    console.warn(
+                        `[Kairo.onDeactivate] ${
+                            e instanceof Error ? e.stack ?? e.message : String(e)
+                        }`,
+                    ),
+                );
+            }
         }
     }
 
-    private static async _runScriptEvent(message: string) {
+    private static async _runScriptEvent(data: KairoCommand) {
         for (const { fn } of this._seHooks) {
-            try { await fn(message); }
-            catch (e) { system.run(() => console.warn(`[Kairo.onScriptEvent] ${e instanceof Error ? e.stack ?? e.message : String(e)}`)); }
+            try {
+                await fn(data);
+            } catch (e) {
+                system.run(() =>
+                    console.warn(
+                        `[Kairo.onScriptEvent] ${
+                            e instanceof Error ? e.stack ?? e.message : String(e)
+                        }`,
+                    ),
+                );
+            }
         }
     }
 }
