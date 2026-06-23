@@ -1,35 +1,55 @@
-# Kairo-template
+# Kairo Template
 
-This repository is a template based on the specifications of the Kairo addon linked below.  
-https://github.com/shizuku86/Kairo
-
-After cloning, run the following command to install node_modules:
-
-- pnpm install
-
-After editing the lines ending with # in src/properties.ts appropriately and resolving errors,  
-execute the following command in the terminal:
-
-- pnpm run build
-
-When this command is executed, `esbuild` is used for bundling and the following operations will be performed:
-
-- manifest.json is automatically generated in BP/ and RP/ from the information in properties
-- TypeScript files in src/ are built as JavaScript into BP/scripts
-- The pack_icon.png at the project root is copied into both BP/ and RP/
-- On Windows, a junction is created from Minecraft’s development folder to this project's BP/ and RP/ (instead of copying)
+Starter template for Minecraft Bedrock addons using `@kairo-js/router`.
 
 ## Requirements
 
-- Node.js (for development and TypeScript build)
+- Node.js 22+
+- pnpm
+- Minecraft Bedrock Script API `@minecraft/server` 2.7.0+
+- The `kairo` behavior pack installed in the world
 
-## Setup && Build
+## Setup
 
-1. Install dependencies:
-    ```bash
-    pnpm install
-    ```
-2. Deploy
-    ```bash
-    pnpm run build
-    ```
+```bash
+pnpm install
+```
+
+Edit `src/properties.ts`:
+
+- `id`
+- `metadata.authors`
+- `header.name`
+- `header.description`
+- `header.version`
+- `dependencies` / `optionalDependencies`
+
+## Development Build
+
+```bash
+pnpm run build
+```
+
+This runs typecheck, bundles `src/index.ts` and `src/properties.ts` into `BP/scripts`, generates `BP/manifest.json` and `RP/manifest.json`, copies `pack_icon.png`, and deploys the pack into Minecraft's development folders on Windows.
+
+## Router Usage
+
+Use `router.beforeEvents.startup` for registration-time declarations:
+
+```ts
+router.beforeEvents.startup.subscribe((ev) => {
+    ev.addonApi.register("template/hello", () => undefined);
+});
+```
+
+Use `router.afterEvents.addonActivate` as the safe point for world logic:
+
+```ts
+router.afterEvents.addonActivate.subscribe(() => {
+    // world APIs are safe here
+});
+```
+
+## Release
+
+Pushing a tag that starts with `v` runs `.github/workflows/release.yml`. The release workflow builds with `pnpm run build:ci` and uploads `.mcaddon` / `.zip` artifacts.
