@@ -1,6 +1,6 @@
-import path from "path";
 import fs from "fs";
 import fse from "fs-extra";
+import path from "path";
 import { getSafeFolderName } from "./path-utils.js";
 
 function replaceFileWithHardLink(srcPath, dstPath) {
@@ -12,9 +12,13 @@ function replaceFileWithHardLink(srcPath, dstPath) {
 
     try {
         fs.linkSync(srcPath, dstPath);
+        console.debug(`[hardlink] ${dstPath} -> ${srcPath}`);
     } catch (err) {
         const code = err?.code;
         if (code === "EXDEV" || code === "EPERM" || code === "EACCES") {
+            console.warn(
+                `[fallback:copy] ${dstPath}\n` + `  reason: ${code}\n` + `  src: ${srcPath}`,
+            );
             fse.copyFileSync(srcPath, dstPath);
             return;
         }

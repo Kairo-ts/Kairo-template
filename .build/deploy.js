@@ -1,11 +1,11 @@
-import path from "path";
-import os from "os";
+import { spawnSync } from "child_process";
 import fs from "fs";
 import fse from "fs-extra";
+import os from "os";
+import path from "path";
 import { fileURLToPath } from "url";
-import { spawnSync } from "child_process";
-import { writeManifests } from "./generate-manifest.js";
 import { writePackIcon } from "./copy-pack_icon.js";
+import { writeManifests } from "./generate-manifest.js";
 import { getSafeFolderName } from "./path-utils.js";
 
 const __filename = fileURLToPath(import.meta.url);
@@ -54,14 +54,13 @@ function replacePathWithJunction(targetPath, linkPath) {
 
 async function main() {
     if (process.platform !== "win32") {
-        console.log("Not on Windows. Skipping deploy.");
         return;
     }
 
     const rootDir = path.join(__dirname, "..");
 
     // ★ ここで BP/scripts が存在する前提
-    const { bpManifest, rpManifest, versionString, properties } = await writeManifests(rootDir);
+    const { bpManifest, rpManifest, properties } = await writeManifests(rootDir);
 
     writePackIcon(rootDir, properties);
 
@@ -75,7 +74,6 @@ async function main() {
     const bpDir = path.join(rootDir, "BP");
     const dstBP = resolveMinecraftDevPath(safeFolderName, "behavior");
     replacePathWithJunction(bpDir, dstBP);
-    console.log(`[deploy] BP junction => ${dstBP} -> ${bpDir}`);
 
     if (rpManifest) {
         const rpDisplayName = rpManifest.header?.name;
@@ -84,13 +82,6 @@ async function main() {
         const rpDir = path.join(rootDir, "RP");
         const dstRP = resolveMinecraftDevPath(safeFolderName, "resource");
         replacePathWithJunction(rpDir, dstRP);
-
-        console.log(`[deploy] RP junction => ${dstRP} -> ${rpDir}`);
-        console.log(`[deploy] ${bpDisplayName} (${safeFolderName}) ${versionString} deployed.`);
-    } else {
-        console.log(
-            `[deploy] ${bpDisplayName} (${safeFolderName}) ${versionString} deployed (BP only).`,
-        );
     }
 }
 

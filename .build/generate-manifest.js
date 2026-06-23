@@ -7,13 +7,8 @@ const UUID_STORE_FILE = ".uuid.json";
 const VERSION_STORE_FILE = ".manifest-version.json";
 
 const DEFAULT_BP_DEPENDENCIES = {
-    "@minecraft/server": "2.4.0",
+    "@minecraft/server": "2.8.0",
     "@minecraft/server-ui": "2.0.0",
-};
-
-const MINECRAFT_MODULE = {
-    SERVER: "@minecraft/server",
-    SERVER_UI: "@minecraft/server-ui",
 };
 
 const uuidStorePath = (rootDir) => path.join(rootDir, ".build", UUID_STORE_FILE);
@@ -129,20 +124,20 @@ function buildCommon(header, metadata, version, kairoVersion) {
 function buildBPDependencies(propDeps = [], rpHeaderUUID, version) {
     const result = Array.isArray(propDeps) ? [...propDeps] : [];
 
-    const hasServer = result.some((d) => d.module_name === MINECRAFT_MODULE.SERVER);
-    const hasServerUI = result.some((d) => d.module_name === MINECRAFT_MODULE.SERVER_UI);
+    const hasServer = result.some((d) => d.module_name === "@minecraft/server");
+    const hasServerUI = result.some((d) => d.module_name === "@minecraft/server-ui");
 
     if (!hasServer) {
         result.push({
-            module_name: MINECRAFT_MODULE.SERVER,
-            version: DEFAULT_BP_DEPENDENCIES[MINECRAFT_MODULE.SERVER],
+            module_name: "@minecraft/server",
+            version: DEFAULT_BP_DEPENDENCIES["@minecraft/server"],
         });
     }
 
     if (!hasServerUI) {
         result.push({
-            module_name: MINECRAFT_MODULE.SERVER_UI,
-            version: DEFAULT_BP_DEPENDENCIES[MINECRAFT_MODULE.SERVER_UI],
+            module_name: "@minecraft/server-ui",
+            version: DEFAULT_BP_DEPENDENCIES["@minecraft/server-ui"],
         });
     }
 
