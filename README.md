@@ -13,6 +13,7 @@ Starter template for Minecraft Bedrock addons using `@kairo-js/router`.
 
 ```bash
 pnpm install
+pnpm run init
 ```
 
 Edit `src/properties.ts`:
@@ -49,7 +50,3 @@ router.afterEvents.addonActivate.subscribe(() => {
     // world APIs are safe here
 });
 ```
-
-## Release
-
-Pushing a tag that starts with `v` runs `.github/workflows/release.yml`. The release workflow builds with `pnpm run build:ci` and uploads `.mcaddon` / `.zip` artifacts.
